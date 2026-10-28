@@ -99,7 +99,7 @@ html,body{margin:0;height:100%;background:var(--bg);color:white;font-family:-app
 #dayNight{position:absolute;right:8px;top:3px;z-index:12;border:1px solid #ffffff55;border-radius:14px;background:#30274eaa;color:white;padding:5px 9px;font-size:11px;backdrop-filter:blur(8px)}
 #stage.night{filter:none;background-color:#171a3a}
 #stage.night:after{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;background:linear-gradient(180deg,rgba(14,20,58,.26),rgba(22,16,54,.44));mix-blend-mode:multiply}
-#decor{z-index:1}
+#decor{z-index:3!important;pointer-events:none}#decor .scene-object,#decor #fridge{pointer-events:auto}
 .plant-hit{position:absolute;z-index:5;left:0;top:0;width:42%;height:34%;background:transparent;border:0;padding:0;cursor:pointer}
 .leaf-pixel{z-index:6}
 .window-frame{position:absolute;z-index:2;overflow:hidden;border:4px solid #e7f2ff;border-radius:4px;background:linear-gradient(#bceeff,#e4f7ff 58%,#b3d9f5);box-shadow:0 3px 10px #0002}
@@ -176,7 +176,7 @@ html,body{margin:0;height:100%;background:var(--bg);color:white;font-family:-app
 </style>
 <style>
 /* Requested interaction fixes */
-.fridge{right:1%!important;left:auto!important;top:9%!important;width:34%!important;height:60%!important;z-index:20!important;opacity:.001!important;pointer-events:auto!important}
+.fridge{right:0!important;left:auto!important;top:8%!important;width:42%!important;height:66%!important;z-index:200!important;opacity:.001!important;pointer-events:auto!important}
 #char{z-index:2}
 .window-frame{display:none!important}
 
