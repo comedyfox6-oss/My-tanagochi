@@ -1,0 +1,7 @@
+name = "boy-ai"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+# Workers AI: ключи не нужны, доступ идёт через binding
+[ai]
+binding = "AI"
