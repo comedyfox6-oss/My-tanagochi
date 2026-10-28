@@ -51,9 +51,15 @@ function robotSVG(state){
 function face(state){
  const s=state||(S.sleeping?"sleep":S.mood<25?"sad":"idle");
  const el=$("#char");
- el.innerHTML='<img alt="Пиксельный бойчик" src="assets/char/'+s+'.png">';
- const img=el.querySelector("img");
- img.onerror=()=>{el.innerHTML=robotSVG(s)};
+ el.dataset.state=s;
+ // Сразу показываем встроенного робота, чтобы персонаж не исчезал во время загрузки PNG.
+ el.innerHTML=robotSVG(s);
+ const img=new Image();
+ img.alt="Пиксельный бойчик";
+ img.decoding="async";
+ img.onload=()=>{if(el.dataset.state===s)el.replaceChildren(img)};
+ img.onerror=()=>{};
+ img.src="assets/char/"+s+".png";
  clearTimeout(charStateTimer);
  if(state&&state!=="sleep"&&state!=="sad")charStateTimer=setTimeout(()=>face(),1800);
 }function renderNav(){let nav=$("#nav");nav.innerHTML=Object.keys(ROOMS).map(r=>'<button data-r="'+r+'" class="'+(S.room===r?"on":"")+'"><b>'+ROOMS[r].icon+'</b>'+ROOMS[r].name+'</button>').join("")+'<button id="chatBtn"><b>💬</b>Чат</button>';nav.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>setRoom(b.dataset.r));$("#chatBtn").onclick=openChat}
