@@ -175,7 +175,17 @@ function renderDecor(r){
   $("#fridge").onclick=openInventory;renderTableItems();
  }else if(r==="bedroom"){
   d.innerHTML='<div class="garland" id="garland" aria-label="Гирлянда"><i class="wire"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i></div><div class="window-frame" id="bedWindow" style="left:8%;top:18%;width:38%;height:25%"><div class="curtain-toggle"><i class="curtain left"></i><i class="curtain right"></i></div></div><div style="position:absolute;left:5%;bottom:0;width:44%;height:22%;background:#4d477d;border-radius:12px 12px 0 0;box-shadow:inset 0 8px #a7a0d5"></div>';
-  $("#garland").onclick=()=>{$("#garland").classList.toggle("off");$("#garland").querySelectorAll(".bulb").forEach(x=>{x.style.opacity=$("#garland").classList.contains("off")?".18":"";x.style.boxShadow=$("#garland").classList.contains("off")?"none":""})};
+  $("#garland").onclick=()=>{
+   const g=$("#garland");
+   g.classList.toggle("off");
+   const isOff=g.classList.contains("off");
+   g.querySelectorAll(".bulb").forEach(x=>{x.style.opacity=isOff?".18":"";x.style.boxShadow=isOff?"none":"";x.style.animationPlayState=isOff?"paused":""});
+   if(S.sleeping&&!isOff){
+    const grumbles=["Эй… я вообще-то сплю… выключи эту дискотеку…","М-м-м! Ну кто включает гирлянду, когда робот спит?!","У-у-у… ярко же… я спать пришёл, а не на вечеринку…","Пф-ф… пять минут тишины можно? Я на зарядке…"];
+    say(pick(grumbles));face("sad");setTimeout(()=>{if(S.sleeping)face("sleep")},1400);
+   }else if(S.sleeping&&isOff){say("М-м… вот так лучше… спокойной ночи.");face("sleep")}
+   else {say(isOff?"Гирлянда выключена.":"Гирлянда загорелась.");}
+  };
   $("#bedWindow").onclick=()=>$("#bedWindow").classList.toggle("closed");
  }else{
   d.innerHTML='<div class="window-frame" id="bathWindow" style="right:10%;top:12%;width:34%;height:34%"><div class="curtain-toggle"><i class="curtain left"></i><i class="curtain right"></i></div></div><div style="position:absolute;left:8%;bottom:0;width:65%;height:18%;background:#b5e9f7;border-radius:14px 14px 0 0"></div><div class="scene-object soap-object" id="soap" aria-label="Перетащить мыло"></div>';
