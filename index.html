@@ -364,7 +364,6 @@ $("#form").onsubmit=async e=>{e.preventDefault();let inp=$("#inp"),t=inp.value.t
 $("#nameBtn").onclick=()=>{let n=prompt("Как его зовут?",S.name||"");if(n&&n.trim()){S.name=n.trim().slice(0,16);$("#nameBtn").textContent=S.name;save()}};
 $("#nameOk").onclick=()=>{S.name=$("#nameInp").value.trim().slice(0,16)||"Кай";$("#nameBtn").textContent=S.name;$("#namer").classList.remove("open");save();addMsg("bot","Привет! Я "+S.name+". Теперь я живу у тебя в телефоне. Позаботишься обо мне?")};
 function tick(){let now=Date.now(),h=Math.min(12,(now-(S.last||now))/3600000);S.food=clamp(S.food-8*h);S.clean=clamp(S.clean-3*h);S.mood=clamp(S.mood-5*h);S.energy=clamp(S.energy+(S.sleeping?100:-4)*h);if(S.sleeping&&S.energy>=100)S.sleeping=false;S.last=now;stats();face();renderActions();save()}
-(function init(){const today=new Date().toDateString();if(S.savedDay!==today){if(S.savedDay)S.days=(S.days||1)+1;S.savedDay=today;save()}setRoom(ROOMS[S.room]?S.room:"living");setupLaundry();updateLevel();if(!S.name)$("#namer").classList.add("open");else $("#nameBtn").textContent=S.name;face();stats();setInterval(()=>{let now=Date.now(),h=(now-(S.last||now))/3600000;if(h>0){S.food=clamp(S.food-8*h);S.clean=clamp(S.clean-3*h);S.mood=clamp(S.mood-5*h);S.energy=clamp(S.energy+(S.sleeping?100:-4)*h);if(S.sleeping&&S.energy>=100)S.sleeping=false;S.last=now;stats();face();save()}},60000)})();
 /* Three touch-friendly mini-games */
 S.coins=Number.isFinite(S.coins)?S.coins:0;
 const mg=$("#miniGames"), canvas=$("#mgCanvas"), ctx=canvas.getContext("2d");
@@ -413,6 +412,7 @@ $("#mgAction").onclick=mgJump;
 for(const [id,key] of [["mgLeft","left"],["mgRight","right"]]){const b=$("#"+id);b.addEventListener("pointerdown",e=>{e.preventDefault();mgHeld[key]=true;try{b.setPointerCapture(e.pointerId)}catch{}});for(const ev of ["pointerup","pointercancel","lostpointercapture"])b.addEventListener(ev,()=>mgHeld[key]=false)}
 canvas.addEventListener("pointerdown",e=>{if(mgMode==="runner")mgJump();else if(mgMode==="platform"){const r=canvas.getBoundingClientRect();mgHeld[e.clientX<r.left+r.width/2?"left":"right"]=true;setTimeout(()=>mgHeld={left:false,right:false},240)}else{const r=canvas.getBoundingClientRect();mgHeld[e.clientX<r.left+r.width/2?"left":"right"]=true;setTimeout(()=>mgHeld={left:false,right:false},220)}});
 window.addEventListener("resize",()=>{if(mgRunning)mgSize()});
+(function init(){const today=new Date().toDateString();if(S.savedDay!==today){if(S.savedDay)S.days=(S.days||1)+1;S.savedDay=today;save()}setRoom(ROOMS[S.room]?S.room:"living");setupLaundry();updateLevel();if(!S.name)$("#namer").classList.add("open");else $("#nameBtn").textContent=S.name;face();stats();setInterval(()=>{let now=Date.now(),h=(now-(S.last||now))/3600000;if(h>0){S.food=clamp(S.food-8*h);S.clean=clamp(S.clean-3*h);S.mood=clamp(S.mood-5*h);S.energy=clamp(S.energy+(S.sleeping?100:-4)*h);if(S.sleeping&&S.energy>=100)S.sleeping=false;S.last=now;stats();face();save()}},60000)})();
 </script>
 <script>
 /* Stop iPhone Safari from scrolling/bouncing the whole toy when swiping the scene.
