@@ -121,6 +121,31 @@ html,body{margin:0;height:100%;background:var(--bg);color:white;font-family:-app
 @keyframes twinkle{from{opacity:.55;filter:brightness(.8)}to{opacity:1;filter:brightness(1.4)}}
 
 #levelInfo{font-size:10px;opacity:.85;white-space:nowrap}.laptop{transform:scale(1.15);transform-origin:bottom right}.kitchen-groceries{position:absolute;z-index:3;left:31%;top:28%;display:flex;align-items:end;gap:3px;padding:5px 7px;border-radius:10px;background:#fff9e9d9;box-shadow:0 3px 8px #0002}.grocery{font-size:24px;filter:drop-shadow(0 2px 1px #0002)}.laundry-hit{position:absolute;z-index:6;right:0;bottom:4%;width:36%;height:32%;background:transparent;border:0}.soap-object{width:58px;height:34px;touch-action:none;z-index:8;box-shadow:0 4px 0 #4a9bb4,0 0 0 9px #ffffff05}#char{touch-action:pan-y;user-select:none;-webkit-user-select:none}#stage.cracked:before{content:"";position:absolute;inset:0;z-index:8;pointer-events:none;background:linear-gradient(31deg,transparent 48.8%,#e8f7ffdd 49%,#18213b 49.3%,transparent 49.7%),linear-gradient(108deg,transparent 58%,#e8f7ffcc 58.3%,#1b2540 58.6%,transparent 59%),linear-gradient(164deg,transparent 39%,#ffffffbb 39.3%,#1c2340 39.6%,transparent 40%)}#stage.shaking{animation:screenShake .12s linear 4}@keyframes screenShake{25%{transform:translate(3px,-2px)}50%{transform:translate(-3px,2px)}75%{transform:translate(2px,2px)}}#char.jump{animation:robotJump .45s ease-in-out}@keyframes robotJump{0%,100%{transform:translateX(-50%) translateY(0)}45%{transform:translateX(-50%) translateY(-32px)}70%{transform:translateX(-50%) translateY(0)}}.matrix-rain{position:absolute;z-index:3;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:1px;font:700 12px/1.05 ui-monospace,monospace;letter-spacing:1px;white-space:pre;opacity:0;animation:matrixDrop var(--duration,3s) linear forwards;text-shadow:0 0 7px currentColor}.matrix-rain.pink{color:#ff83d1}.matrix-rain.blue{color:#78e9ff}@keyframes matrixDrop{0%{opacity:0;transform:translateY(-18px)}12%{opacity:var(--brightness,.7)}80%{opacity:var(--brightness,.7)}100%{opacity:0;transform:translateY(var(--fall,150px))}}</style>
+
+<style>
+/* Readable mobile layout and reliable room controls */
+#nameRow{justify-content:flex-start!important;gap:8px;min-width:0}
+#nameBtn{flex:0 0 auto;padding:3px 0;text-align:left}
+#roomTitle{flex:1;min-width:0;text-align:left!important;margin:0!important;opacity:1;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#levelInfo{flex:0 0 auto;margin-left:auto;text-align:left!important}
+#terminal{left:8px;right:auto;width:min(190px,48vw);max-width:190px;text-align:left}
+#terminalHead,#terminalLines,.term-line{text-align:left}
+#terminalHead{font-size:9px;letter-spacing:.04em}
+#terminalLines{max-height:48px;line-height:1.35}
+#stats .stat{gap:4px}
+#stats .statLabel{display:block;width:100%;font-size:10px;line-height:1.1;text-align:center;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#stats .statIcon{flex:0 0 auto}
+#nav{position:relative;z-index:11;isolation:isolate;gap:4px;padding-left:5px;padding-right:5px}
+#nav button{position:relative;z-index:1;min-width:0;min-height:48px;touch-action:manipulation;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+#nav button .room-dot{display:grid;place-items:center;width:27px;height:27px;border-radius:50%;border:1px solid #ffffff55;background:#ffffff18;font-size:17px;line-height:1}
+#nav button small{font-size:10px;line-height:1.1;white-space:nowrap}
+#nav button.on .room-dot{background:#ffffff2b;border-color:#fff}
+#stage.cracked:before{animation:crackFade 12s ease-out forwards}
+@keyframes crackFade{0%{opacity:1}75%{opacity:.9}100%{opacity:0}}
+.window-frame{cursor:pointer}
+@media(max-width:380px){#top{padding-left:8px;padding-right:8px}#nameBtn{font-size:17px}#roomTitle{font-size:12px}#levelInfo{font-size:9px}#stats{left:6px;right:6px;padding:7px 5px;gap:5px}#stats .statIcon{width:32px;height:32px;font-size:15px}#stats .statLabel{font-size:9px}#nav{gap:1px}#nav button{padding-left:1px;padding-right:1px}#nav button small{font-size:9px}}
+</style>
+
 </head>
 <body><div id="app">
 <header id="top"><div id="nameRow"><button id="nameBtn">…</button><span id="roomTitle"></span><span id="levelInfo">Ур. 0 · День 1</span></div><button id="dayNight" type="button">Ночь</button></header>
@@ -241,26 +266,3 @@ $("#nameOk").onclick=()=>{S.name=$("#nameInp").value.trim().slice(0,16)||"Кай
 function tick(){let now=Date.now(),h=Math.min(12,(now-(S.last||now))/3600000);S.food=clamp(S.food-8*h);S.clean=clamp(S.clean-3*h);S.mood=clamp(S.mood-5*h);S.energy=clamp(S.energy+(S.sleeping?100:-4)*h);if(S.sleeping&&S.energy>=100)S.sleeping=false;S.last=now;stats();face();renderActions();save()}
 (function init(){const today=new Date().toDateString();if(S.savedDay!==today){if(S.savedDay)S.days=(S.days||1)+1;S.savedDay=today;save()}setRoom(ROOMS[S.room]?S.room:"living");setupLaundry();updateLevel();if(!S.name)$("#namer").classList.add("open");else $("#nameBtn").textContent=S.name;face();stats();setInterval(()=>{let now=Date.now(),h=(now-(S.last||now))/3600000;if(h>0){S.food=clamp(S.food-8*h);S.clean=clamp(S.clean-3*h);S.mood=clamp(S.mood-5*h);S.energy=clamp(S.energy+(S.sleeping?100:-4)*h);if(S.sleeping&&S.energy>=100)S.sleeping=false;S.last=now;stats();face();save()}},60000)})();
 </script></body></html>
-<style>
-/* Readable mobile layout and reliable room controls */
-#nameRow{justify-content:flex-start!important;gap:8px;min-width:0}
-#nameBtn{flex:0 0 auto;padding:3px 0;text-align:left}
-#roomTitle{flex:1;min-width:0;text-align:left!important;margin:0!important;opacity:1;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#levelInfo{flex:0 0 auto;margin-left:auto;text-align:left!important}
-#terminal{left:8px;right:auto;width:min(190px,48vw);max-width:190px;text-align:left}
-#terminalHead,#terminalLines,.term-line{text-align:left}
-#terminalHead{font-size:9px;letter-spacing:.04em}
-#terminalLines{max-height:48px;line-height:1.35}
-#stats .stat{gap:4px}
-#stats .statLabel{display:block;width:100%;font-size:10px;line-height:1.1;text-align:center;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#stats .statIcon{flex:0 0 auto}
-#nav{position:relative;z-index:11;isolation:isolate;gap:4px;padding-left:5px;padding-right:5px}
-#nav button{position:relative;z-index:1;min-width:0;min-height:48px;touch-action:manipulation;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
-#nav button .room-dot{display:grid;place-items:center;width:27px;height:27px;border-radius:50%;border:1px solid #ffffff55;background:#ffffff18;font-size:17px;line-height:1}
-#nav button small{font-size:10px;line-height:1.1;white-space:nowrap}
-#nav button.on .room-dot{background:#ffffff2b;border-color:#fff}
-#stage.cracked:before{animation:crackFade 12s ease-out forwards}
-@keyframes crackFade{0%{opacity:1}75%{opacity:.9}100%{opacity:0}}
-.window-frame{cursor:pointer}
-@media(max-width:380px){#top{padding-left:8px;padding-right:8px}#nameBtn{font-size:17px}#roomTitle{font-size:12px}#levelInfo{font-size:9px}#stats{left:6px;right:6px;padding:7px 5px;gap:5px}#stats .statIcon{width:32px;height:32px;font-size:15px}#stats .statLabel{font-size:9px}#nav{gap:1px}#nav button{padding-left:1px;padding-right:1px}#nav button small{font-size:9px}}
-</style>
