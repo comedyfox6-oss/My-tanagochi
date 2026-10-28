@@ -124,13 +124,7 @@ html,body{margin:0;height:100%;background:var(--bg);color:white;font-family:-app
 #nav{justify-content:center!important;gap:0!important;padding:2px 0 5px!important}#nav button{flex:0 0 68px!important;max-width:68px}
 
 /* Гардероб: вешалки и одежда */
-.wardrobe-hit{position:absolute;z-index:4;left:4%;top:29%;width:25%;height:43%;border:0;background:transparent;cursor:pointer;touch-action:manipulation}
-.wardrobe-visual{position:absolute;left:5%;top:24%;width:24%;height:48%;z-index:3;pointer-events:none}
-.wardrobe-visual .wardrobe-body{position:absolute;inset:10% 8% 0;border:3px solid #674b48;border-radius:10px 10px 3px 3px;background:linear-gradient(90deg,#b68c70,#f4d7b4 45%,#b88064)}
-.wardrobe-visual .wardrobe-door{position:absolute;left:0;top:0;width:50%;height:100%;border:3px solid #6e4a48;border-radius:9px 3px 3px 3px;background:linear-gradient(90deg,#d5a17a,#f1c7a0,#b88064)}
-.wardrobe-visual .wardrobe-knob{position:absolute;right:9%;top:49%;width:5px;height:5px;border-radius:50%;background:#f9dc86}
-.wardrobe-visual .hanger-rail{position:absolute;top:15%;left:15%;right:15%;height:4px;background:#76534a}
-.wardrobe-visual .hanger{position:absolute;top:17%;width:27%;height:35%;border-top:3px solid #8a6b58;background:#f3b4d5;clip-path:polygon(50% 0,100% 30%,100% 100%,0 100%,0 30%)}
+.wardrobe-hit{position:absolute;z-index:4;right:4%;top:17%;width:23%;height:38%;border:0;background:transparent;cursor:pointer;touch-action:manipulation}
 #wardrobePanel{position:absolute;inset:8% 5%;z-index:15;display:none;grid-template-rows:auto auto 1fr auto;gap:10px;padding:14px;background:#201632f5;border:1px solid #ffffff50;border-radius:20px;box-shadow:0 12px 35px #0008;color:white;overflow:hidden}
 #wardrobePanel.open{display:grid}.wardrobe-title{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:17px}.wardrobe-sub{font-size:11px;opacity:.75}
 .wardrobe-rack{display:flex;gap:8px;overflow-x:auto;padding:6px 2px 10px;min-height:88px}
@@ -354,7 +348,7 @@ function renderDecor(r){
   d.innerHTML='<div class="scene-object fridge" id="fridge" aria-label="Открыть холодильник"></div><div class="kitchen-groceries"><span class="grocery">🍎</span><span class="grocery">🍐</span><span class="grocery">🍊</span><span class="grocery">🥕</span><span class="grocery">🥛</span><span class="grocery">🥖</span></div><div class="kitchen-table"><div class="tabletop"></div><i class="leg left"></i><i class="leg right"></i><div class="table-items" id="tableItems"></div></div>';
   $("#fridge").onclick=openInventory;renderTableItems();
  }else if(r==="bedroom"){
-  d.innerHTML='<div class="wardrobe-visual" aria-hidden="true"><div class="wardrobe-body"><div class="hanger-rail"></div><div class="hanger" style="left:18%"></div><div class="hanger" style="left:48%;background:#9fe5e2"></div></div><div class="wardrobe-door"><i class="wardrobe-knob"></i></div></div><button type="button" class="wardrobe-hit" id="wardrobeHit" aria-label="Открыть гардероб"></button><div class="garland" id="garland" aria-label="Гирлянда"><i class="wire"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i></div><div class="bed-base" aria-hidden="true"></div><button type="button" class="bed-hit" id="bedHit" aria-label="Уложить или разбудить бойчика"></button>';
+  d.innerHTML='<button type="button" class="wardrobe-hit" id="wardrobeHit" aria-label="Открыть гардероб"></button><div class="garland" id="garland" aria-label="Гирлянда"><i class="wire"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i></div><div class="bed-base" aria-hidden="true"></div><button type="button" class="bed-hit" id="bedHit" aria-label="Уложить или разбудить бойчика"></button>';
   $("#bedHit").onclick=()=>{if(S.sleeping)wake();else sleep()};$("#wardrobeHit").onclick=openWardrobe;
   $("#garland").onclick=()=>{
    const g=$("#garland");
