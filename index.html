@@ -151,6 +151,10 @@ html,body{margin:0;height:100%;background:var(--bg);color:white;font-family:-app
 #nav{justify-content:center!important;gap:0!important;padding:2px 0 5px!important}#nav button{flex:0 0 68px!important;max-width:68px}
 
 #mgMenu button[data-game="platform"]{display:none!important}
+
+/* Quiet, optional server-room ambience */
+#soundToggle{position:absolute;right:10px;top:42px;z-index:13;border:1px solid #ffffff45;border-radius:14px;background:rgba(35,27,65,.78);color:white;padding:7px 10px;font-size:11px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 3px 12px #0002}
+#soundToggle[aria-pressed="true"]{background:rgba(91,74,145,.9);border-color:#b9aaff}
 </style>
 
 <style>
@@ -320,7 +324,7 @@ html, body {
 </style>
 </head>
 <body><div id="app">
-<header id="top"><div id="nameRow"><button id="nameBtn">…</button><span id="roomTitle"></span><span id="levelInfo">Ур. 0 · День 1</span></div><button id="dayNight" type="button">Ночь</button></header>
+<header id="top"><div id="nameRow"><button id="nameBtn">…</button><span id="roomTitle"></span><span id="levelInfo">Ур. 0 · День 1</span></div><button id="dayNight" type="button">Ночь</button><button id="soundToggle" type="button" aria-pressed="false" title="Включить фоновый гул серверной">🔇 Гул</button></header>
 <main id="stage"><div id="decor"></div><div id="stats"></div><div id="bubble"></div><div id="char" aria-label="Погладить персонажа"></div><div id="inventory"></div></main>
 <section id="terminal" aria-live="polite"><div id="terminalHead"><span>СОБЫТИЯ</span><span id="terminalStatus">ONLINE</span></div><div id="terminalLines"><div class="term-line system">Система запущена. Жду событий…</div></div></section>
 <div id="actions" aria-hidden="true"></div><nav id="nav" aria-hidden="true"></nav>
@@ -525,6 +529,57 @@ document.addEventListener("gesturestart", function(e) {
   if (e.cancelable) e.preventDefault();
 }, { passive: false });
 </script>
+
+<script>
+/* Optional synthetic server-room ambience. Audio starts only after a deliberate tap. */
+(function setupServerHum(){
+  const button=document.getElementById("soundToggle");
+  if(!button)return;
+  let audio=null, master=null, noiseGain=null, humNodes=[], enabled=false, noiseSource=null, noiseFilter=null;
+  const setTarget=(param,value,time=.8)=>{const now=audio.currentTime;param.cancelScheduledValues(now);param.setTargetAtTime(value,now,time)};
+  function startServerHum(){
+    const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+    if(!AudioContextClass){button.textContent="🔇 Нет звука";button.disabled=true;return false}
+    if(!audio){
+      audio=new AudioContextClass();
+      master=audio.createGain();master.gain.value=0;master.connect(audio.destination);
+      const low=audio.createOscillator();low.type="sine";low.frequency.value=54;
+      const lowGain=audio.createGain();lowGain.gain.value=.19;low.connect(lowGain);lowGain.connect(master);low.start();
+      const mid=audio.createOscillator();mid.type="sine";mid.frequency.value=108;
+      const midGain=audio.createGain();midGain.gain.value=.055;mid.connect(midGain);midGain.connect(master);mid.start();
+      const fan=audio.createOscillator();fan.type="triangle";fan.frequency.value=172;
+      const fanGain=audio.createGain();fanGain.gain.value=.012;fan.connect(fanGain);fanGain.connect(master);fan.start();
+      humNodes=[low,mid,fan];
+      const buffer=audio.createBuffer(1,audio.sampleRate*3,audio.sampleRate);
+      const data=buffer.getChannelData(0);
+      let smooth=0;
+      for(let n=0;n<data.length;n++){smooth=smooth*.985+(Math.random()*2-1)*.015;data[n]=smooth*2.5}
+      noiseSource=audio.createBufferSource();noiseSource.buffer=buffer;noiseSource.loop=true;
+      noiseFilter=audio.createBiquadFilter();noiseFilter.type="lowpass";noiseFilter.frequency.value=720;noiseFilter.Q.value=.45;
+      noiseGain=audio.createGain();noiseGain.gain.value=.28;
+      noiseSource.connect(noiseFilter);noiseFilter.connect(noiseGain);noiseGain.connect(master);noiseSource.start();
+    }
+    if(audio.state==="suspended")audio.resume();
+    enabled=true;setTarget(master.gain,.12,.65);
+    button.setAttribute("aria-pressed","true");button.textContent="🔊 Гул";
+    button.title="Выключить фоновый гул серверной";
+    return true;
+  }
+  function stopServerHum(){
+    if(!audio||!master){enabled=false;button.setAttribute("aria-pressed","false");button.textContent="🔇 Гул";button.title="Включить фоновый гул серверной";return}
+    enabled=false;setTarget(master.gain,0,.25);
+    button.setAttribute("aria-pressed","false");button.textContent="🔇 Гул";button.title="Включить фоновый гул серверной";
+  }
+  button.addEventListener("click",()=>{if(enabled)stopServerHum();else startServerHum()});
+  document.addEventListener("visibilitychange",()=>{
+    if(!audio||!master)return;
+    if(document.hidden){setTarget(master.gain,0,.2)}
+    else if(enabled){if(audio.state==="suspended")audio.resume();setTarget(master.gain,.12,.8)}
+  });
+  window.addEventListener("pagehide",()=>{if(audio&&audio.state!=="closed")audio.suspend()});
+})();
+</script>
+
 </body></html>
 <!-- Redeploy trigger: 2026-10-29 -->
 
