@@ -1,0 +1,17 @@
+{
+  "name": "Кай",
+  "short_name": "Кай",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#2a1f4a",
+  "theme_color": "#2a1f4a",
+  "icons": [
+    {
+      "src": "./assets/app-avatar/app-avatar.jpg",
+      "sizes": "any",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}
