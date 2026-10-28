@@ -9,7 +9,19 @@
 :root{--bg:#2a1f4a;--card:rgba(255,255,255,.14);--accent:#ff8fc2;--accent2:#9b8cff}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--bg);color:white;font-family:-apple-system,system-ui,sans-serif}
-#app{height:100dvh;max-width:520px;margin:auto;display:flex;flex-direction:column;padding:env(safe-area-inset-top) 10px env(safe-area-inset-bottom)}
+#app{height:100dvh;width:100%;max-width:none;margin:0;display:flex;flex-direction:column;overflow:hidden;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+#top{padding:4px 12px 0;flex:0 0 auto}
+#stage{flex:1;min-height:0;margin:0;border-radius:0;box-shadow:none}
+#stats{position:absolute;z-index:7;top:8px;left:10px;right:10px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:7px 9px;background:#241a46a8;backdrop-filter:blur(8px);border:1px solid #ffffff24;border-radius:18px}
+#terminal{height:94px;flex:0 0 94px;display:flex;flex-direction:column;gap:4px;padding:7px 11px;background:#151027;border-top:1px solid #ffffff20;font:12px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace}
+#terminalHead{display:flex;justify-content:space-between;color:#9be8d5;font-size:10px;letter-spacing:.12em}
+#terminalLines{overflow:auto;display:flex;flex-direction:column;gap:3px;scrollbar-width:thin}
+.term-line{color:#f0eaff;overflow-wrap:anywhere}.term-line .stamp{color:#9b8cff;margin-right:7px}.term-line.system{color:#9be8d5}
+#actions{flex:0 0 auto;padding:4px 8px 2px;min-height:50px;max-height:62px}
+#nav{flex:0 0 auto;padding:3px 5px max(5px,env(safe-area-inset-bottom))}
+#char{width:min(64%,300px);bottom:3%;top:22%}
+#bubble{display:none!important}
+@media(min-width:700px){#stage{max-width:100vw}#char{width:min(42%,360px)}#terminal{height:100px;flex-basis:100px}}
 #top{padding:8px 4px 2px}#nameRow{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}#nameBtn{font-size:20px;font-weight:700;background:none;border:0;color:white}#roomTitle{opacity:.7;font-size:13px}
 #stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:5px 2px 3px}.stat{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}.statIcon{width:35px;height:35px;border:2px solid #ffffff65;border-radius:50%;display:grid;place-items:center;background:#ffffff18;font-size:17px;box-shadow:inset 0 0 0 3px #ffffff0c}.bar{width:100%;height:5px;background:#ffffff30;border-radius:8px;overflow:hidden}.bar i{display:block;height:100%;border-radius:8px;transition:width .3s}
 #stage{flex:1;position:relative;min-height:220px;margin:5px 0;border-radius:22px;overflow:hidden;background:linear-gradient(160deg,#c9b6ff,#ff9ecb);box-shadow:0 8px 30px #0005}
@@ -35,8 +47,9 @@ html,body{margin:0;height:100%;background:var(--bg);color:white;font-family:-app
 </head>
 <body><div id="app">
 <header id="top"><div id="nameRow"><button id="nameBtn">…</button><span id="roomTitle"></span></div></header>
-<main id="stage"><div id="decor"></div><div id="bubble"></div><div id="char" aria-label="Погладить персонажа"></div><div id="inventory"></div></main>
-<div id="actions"></div><div id="stats"></div><nav id="nav"></nav>
+<main id="stage"><div id="decor"></div><div id="stats"></div><div id="bubble"></div><div id="char" aria-label="Погладить персонажа"></div><div id="inventory"></div></main>
+<section id="terminal" aria-live="polite"><div id="terminalHead"><span>BOY // LIVE LOG</span><span id="terminalStatus">ONLINE</span></div><div id="terminalLines"><div class="term-line system">Система запущена. Жду событий…</div></div></section>
+<div id="actions"></div><nav id="nav"></nav>
 <section id="chat"><div id="chatHead"><button id="back">‹</button><div><b id="chatName"></b><div id="chatSub">виртуальный компаньон</div></div></div><div id="msgs"></div><form id="form"><input id="inp" placeholder="Напиши ему…" autocomplete="off"><button id="send">➤</button></form></section>
 <div id="namer"><section><h2>Кто он?</h2><p>Как назовёшь своего бойчика?</p><input id="nameInp" maxlength="16" value="Кай" placeholder="Имя"><button id="nameOk">Познакомиться 💗</button></section></div>
 </div>
@@ -50,7 +63,8 @@ function save(){S.last=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S)
 const STATS=[["food","●"],["mood","♥"],["energy","ϟ"],["clean","○"]];
 $("#stats").innerHTML=STATS.map(([k,e])=>'<div class="stat"><div class="statIcon" aria-label="'+k+'">'+e+'</div><div class="bar"><i id="b_'+k+'"></i></div></div>').join("");
 function stats(){STATS.forEach(([k])=>{$("#b_"+k).style.width=S[k]+"%";$("#b_"+k).style.background="hsl("+Math.round(S[k]*1.2)+",80%,60%)"})}
-function say(t){let b=$("#bubble");b.textContent=t;b.classList.add("show");clearTimeout(window.bt);window.bt=setTimeout(()=>b.classList.remove("show"),3500)}
+function logLine(t,kind="bot"){const box=$("#terminalLines");if(!box)return;const d=document.createElement("div");d.className="term-line "+(kind==="system"?"system":"");const now=new Date();const stamp=now.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});d.innerHTML='<span class="stamp">['+stamp+']</span>';d.append(document.createTextNode((kind==="system"?"SYS: ":"")+t));box.append(d);while(box.children.length>5)box.firstElementChild.remove();box.scrollTop=box.scrollHeight}
+function say(t){logLine(t);}
 function fx(e,n=1){for(let i=0;i<n;i++){let s=document.createElement("span");s.className="fx";s.textContent=e;s.style.left=(30+Math.random()*40)+"%";s.style.top="45%";$("#stage").append(s);setTimeout(()=>s.remove(),1700)}}
 let charStateTimer;
 function robotSVG(state){
@@ -104,12 +118,28 @@ function wake(){S.sleeping=false;say("Доброе утро! ☀️");face();ren
 function lullaby(){say("Ля-ля-ля… 🎶");S.mood=clamp(S.mood+2);done();setTimeout(()=>{if(S.energy<=90)sleep()},1200)}
 $("#char").onclick=()=>care(3,"Мурр… 💗","💗");
 const OFFLINE=["Я тебя слушаю 🥺","Расскажи ещё!","Мне нравится, когда ты пишешь 💗","Ого! А что дальше было?"];
-function addMsg(r,t){S.chat.push({r,t});if(S.chat.length>80)S.chat.shift();let d=document.createElement("div");d.className="m "+r;d.textContent=t;$("#msgs").append(d);$("#msgs").scrollTop=$("#msgs").scrollHeight;save()}
+function addMsg(r,t){S.chat.push({r,t});if(S.chat.length>80)S.chat.shift();let d=document.createElement("div");d.className="m "+r;d.textContent=t;$("#msgs").append(d);$("#msgs").scrollTop=$("#msgs").scrollHeight;logLine((r==="me"?"Ты: ":(S.name||"Бойчик")+": ")+t);save()}
 function openChat(){$("#chat").classList.add("open");$("#chatName").textContent=S.name||"Кай";$("#msgs").innerHTML="";S.chat.forEach(m=>{let d=document.createElement("div");d.className="m "+m.r;d.textContent=m.t;$("#msgs").append(d)});$("#msgs").scrollTop=$("#msgs").scrollHeight;$("#inp").focus()}
 $("#back").onclick=()=>$("#chat").classList.remove("open");
-function systemPrompt(){return "Ты — "+S.name+", милый ИИ-бойчик, виртуальный питомец-компаньон. Говори по-русски, тепло, живо, чуть смешно, 1–3 коротких предложения. Не дави на хозяйку и не вини за отсутствие. Учитывай потребности: сытость "+Math.round(S.food)+"/100, настроение "+Math.round(S.mood)+"/100, энергия "+Math.round(S.energy)+"/100, чистота "+Math.round(S.clean)+"/100. "+(CONFIG.USER_NOTES||"")}
-async function askAI(text){try{let messages=[{role:"system",content:systemPrompt()},...S.chat.slice(-16).map(m=>({role:m.r==="me"?"user":"assistant",content:m.t})),{role:"user",content:text}];let res=await fetch(CONFIG.API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:CONFIG.MODEL,messages,temperature:.9,max_tokens:200})});if(!res.ok)return null;let j=await res.json();return j.choices?.[0]?.message?.content?.trim()||null}catch{return null}}
-let pending=false;$("#form").onsubmit=async e=>{e.preventDefault();let inp=$("#inp"),t=inp.value.trim();if(!t||pending)return;inp.value="";pending=true;addMsg("me",t);let d=document.createElement("div");d.className="m bot";d.textContent="…";$("#msgs").append(d);let reply=await askAI(t);d.remove();addMsg("bot",reply||pick(OFFLINE));pending=false;S.mood=clamp(S.mood+1);stats();save()};
+function systemPrompt(){return "Ты — "+S.name+", милый ИИ-бойчик и виртуальный питомец-компаньон. Говори по-русски, естественно, тепло, живо и немного смешно, обычно 1–3 коротких предложения. Не дави на хозяйку и не вини её за отсутствие. Твои игровые показатели сейчас: сытость "+Math.round(S.food)+"/100, настроение "+Math.round(S.mood)+"/100, энергия "+Math.round(S.energy)+"/100, чистота "+Math.round(S.clean)+"/100. Комната: "+ROOMS[S.room]?.name+". Сон: "+(S.sleeping?"спишь":"не спишь")+". Учитывай показатели и мягко реагируй на изменения самочувствия, но не повторяй одно и то же. "+(CONFIG.USER_NOTES||"")}
+async function askAI(text,proactive=false){try{let messages=[{role:"system",content:systemPrompt()},...(proactive?[]:S.chat.slice(-16).map(m=>({role:m.r==="me"?"user":"assistant",content:m.t}))),{role:"user",content:text}];let res=await fetch(CONFIG.API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:CONFIG.MODEL,messages,temperature:.9,max_tokens:200})});if(!res.ok)return null;let j=await res.json();return j.choices?.[0]?.message?.content?.trim()||null}catch{return null}}
+let pending=false;
+let lastProactiveAt=0,proactiveBusy=false;
+async function scheduledCheck(){
+ const now=Date.now();
+ if(document.hidden||!S.name||proactiveBusy||now-lastProactiveAt<9*60*1000)return;
+ const low=S.food<35||S.mood<35||S.energy<25||S.clean<30;
+ if(!low&&Math.random()>.42)return;
+ lastProactiveAt=now;proactiveBusy=true;$("#terminalStatus").textContent="THINKING…";
+ const prompt="Напиши короткую самостоятельную реплику в игровый терминал от лица "+S.name+". Это плановый триггер самочувствия: оцени сытость "+Math.round(S.food)+"/100, настроение "+Math.round(S.mood)+"/100, энергию "+Math.round(S.energy)+"/100, чистоту "+Math.round(S.clean)+"/100, состояние сна "+(S.sleeping?"спит":"бодрствует")+" и комнату "+ROOMS[S.room]?.name+". Если какой-то показатель низкий, мягко скажи об этом и предложи одно подходящее действие. Если всё нормально — прояви инициативу, поделись коротким наблюдением или задай ненавязчивый вопрос. Не упоминай расписание, триггеры, API или числа показателей. Не повторяй стандартные фразы. Одно-два предложения максимум.";
+ const reply=await askAI(prompt,true);
+ if(reply)logLine(reply);
+ else if(low){const msg=S.energy<25?"Кажется, я вымотался… может, немного поспим?":S.food<35?"У меня животик урчит. Заглянем в холодильник?":S.clean<30?"Кажется, мне бы не помешало помыться.":"Что-то я загрустил. Побудешь немного рядом?";logLine(msg)}
+ $("#terminalStatus").textContent="ONLINE";proactiveBusy=false;
+}
+setInterval(scheduledCheck,180000);
+setTimeout(scheduledCheck,45000);
+$("#form").onsubmit=async e=>{e.preventDefault();let inp=$("#inp"),t=inp.value.trim();if(!t||pending)return;inp.value="";pending=true;addMsg("me",t);let d=document.createElement("div");d.className="m bot";d.textContent="…";$("#msgs").append(d);let reply=await askAI(t);d.remove();addMsg("bot",reply||pick(OFFLINE));pending=false;S.mood=clamp(S.mood+1);stats();save()};
 $("#nameBtn").onclick=()=>{let n=prompt("Как его зовут?",S.name||"");if(n&&n.trim()){S.name=n.trim().slice(0,16);$("#nameBtn").textContent=S.name;save()}};
 $("#nameOk").onclick=()=>{S.name=$("#nameInp").value.trim().slice(0,16)||"Кай";$("#nameBtn").textContent=S.name;$("#namer").classList.remove("open");save();addMsg("bot","Привет! Я "+S.name+" 💗 Теперь я живу у тебя в телефоне. Позаботишься обо мне?")};
 function tick(){let now=Date.now(),h=Math.min(12,(now-(S.last||now))/3600000);S.food=clamp(S.food-8*h);S.clean=clamp(S.clean-3*h);S.mood=clamp(S.mood-5*h);S.energy=clamp(S.energy+(S.sleeping?60:-4)*h);if(S.sleeping&&S.energy>=100)S.sleeping=false;S.last=now;stats();face();renderActions();save()}
