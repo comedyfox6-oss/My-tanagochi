@@ -99,7 +99,7 @@ html,body{margin:0;height:100%;background:var(--bg);color:white;font-family:-app
 #dayNight{position:absolute;right:8px;top:3px;z-index:12;border:1px solid #ffffff55;border-radius:14px;background:#30274eaa;color:white;padding:5px 9px;font-size:11px;backdrop-filter:blur(8px)}
 #stage.night{filter:none;background-color:#171a3a}
 #stage.night:after{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;background:linear-gradient(180deg,rgba(14,20,58,.26),rgba(22,16,54,.44));mix-blend-mode:multiply}
-#decor{z-index:3!important;pointer-events:none}#decor .scene-object,#decor #fridge,#decor #bedHit,#decor #wardrobeHit,#decor #garland,#decor .plant-hit,#decor .laundry-hit{pointer-events:auto}
+#decor{z-index:6!important;pointer-events:none}#decor .scene-object,#decor #fridge,#decor #bedHit,#decor #wardrobeHit,#decor #garland,#decor .plant-hit,#decor .laundry-hit{pointer-events:auto}.bed-hit{left:0!important;bottom:0!important;width:54%!important;height:42%!important;z-index:20!important}
 .plant-hit{position:absolute;z-index:5;left:0;top:0;width:42%;height:34%;background:transparent;border:0;padding:0;cursor:pointer}
 .leaf-pixel{z-index:6}
 .window-frame{position:absolute;z-index:2;overflow:hidden;border:4px solid #e7f2ff;border-radius:4px;background:linear-gradient(#bceeff,#e4f7ff 58%,#b3d9f5);box-shadow:0 3px 10px #0002}
