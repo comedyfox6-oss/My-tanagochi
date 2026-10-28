@@ -125,7 +125,7 @@ html,body{margin:0;height:100%;background:var(--bg);color:white;font-family:-app
 <body><div id="app">
 <header id="top"><div id="nameRow"><button id="nameBtn">…</button><span id="roomTitle"></span><span id="levelInfo">Ур. 0 · День 1</span></div><button id="dayNight" type="button">Ночь</button></header>
 <main id="stage"><div id="decor"></div><div id="stats"></div><div id="bubble"></div><div id="char" aria-label="Погладить персонажа"></div><div id="inventory"></div></main>
-<section id="terminal" aria-live="polite"><div id="terminalHead"><span>BOY // LIVE LOG</span><span id="terminalStatus">ONLINE</span></div><div id="terminalLines"><div class="term-line system">Система запущена. Жду событий…</div></div></section>
+<section id="terminal" aria-live="polite"><div id="terminalHead"><span>СОБЫТИЯ</span><span id="terminalStatus">ONLINE</span></div><div id="terminalLines"><div class="term-line system">Система запущена. Жду событий…</div></div></section>
 <div id="actions"></div><nav id="nav"></nav>
 <section id="chat"><div id="chatHead"><button id="back">‹</button><div><b id="chatName"></b><div id="chatSub">виртуальный компаньон</div></div></div><div id="msgs"></div><form id="form"><input id="inp" placeholder="Напиши ему…" autocomplete="off"><button id="send">➤</button></form></section>
 <div id="namer"><section><h2>Кто он?</h2><p>Как назовёшь своего бойчика?</p><input id="nameInp" maxlength="16" value="Кай" placeholder="Имя"><button id="nameOk">Познакомиться 💗</button></section></div>
@@ -138,7 +138,8 @@ const KEY="ai_boy_v1",$=s=>document.querySelector(s),clamp=v=>Math.max(0,Math.mi
 let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch{};S=S||{name:null,food:80,mood:80,energy:80,clean:80,sleeping:false,room:"living",last:Date.now(),chat:[]};if(!Number.isFinite(S.level))S.level=0;if(!Number.isFinite(S.days))S.days=1;if(!Number.isFinite(S.xp))S.xp=0;if(!Number.isFinite(S.tapCount))S.tapCount=0;if(!Number.isFinite(S.trust))S.trust=0;if(!Array.isArray(S.inventory))S.inventory=[];if(!["day","night"].includes(S.timeMode))S.timeMode="day";if(typeof S.lampOn!=="boolean")S.lampOn=false;
 function save(){S.last=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch{}}function gainXP(n=1){S.xp=(S.xp||0)+n;S.trust=(S.trust||0)+n;while(S.xp>=100){S.xp-=100;S.level=(S.level||0)+1;say("Новый уровень: "+S.level+"! Мне с тобой всё уютнее.")}save();updateLevel()}function updateLevel(){const el=$("#levelInfo");if(el)el.textContent="Ур. "+S.level+" · День "+S.days+" · Доверие "+Math.min(100,Math.floor(S.trust/2))+"%"}
 const STATS=[["food","●"],["mood","♥"],["energy","ϟ"],["clean","○"]];
-$("#stats").innerHTML=STATS.map(([k,e])=>'<div class="stat"><div class="statIcon" aria-label="'+k+'">'+e+'</div><div class="bar"><i id="b_'+k+'"></i></div></div>').join("");
+const STAT_NAMES={food:"Еда",mood:"Настроение",energy:"Энергия",clean:"Чистота"};
+$("#stats").innerHTML=STATS.map(([k,e])=>'<div class="stat" title="'+STAT_NAMES[k]+'"><div class="statIcon" aria-label="'+STAT_NAMES[k]+'">'+e+'</div><small class="statLabel">'+STAT_NAMES[k]+'</small><div class="bar"><i id="b_'+k+'"></i></div></div>').join("");
 function stats(){const colors={food:"#ff8fc2",mood:"#8edfff",energy:"#ffadd5",clean:"#83e5f3"};STATS.forEach(([k])=>{const bar=$("#b_"+k);bar.style.width=clamp(S[k])+"%";bar.style.background=colors[k];bar.style.color=colors[k]})}
 function logLine(t,kind="bot"){const box=$("#terminalLines");if(!box)return;const d=document.createElement("div");d.className="term-line "+(kind==="system"?"system":"");const now=new Date();const stamp=now.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});d.innerHTML='<span class="stamp">['+stamp+']</span>';d.append(document.createTextNode((kind==="system"?"SYS: ":"")+t));box.append(d);while(box.children.length>5)box.firstElementChild.remove();box.scrollTop=box.scrollHeight}
 function say(t){logLine(t);}
@@ -174,7 +175,7 @@ function renderDecor(r){
   d.innerHTML='<div class="scene-object fridge" id="fridge" aria-label="Открыть холодильник"></div><div class="kitchen-groceries"><span class="grocery">🍎</span><span class="grocery">🍐</span><span class="grocery">🍊</span><span class="grocery">🥕</span><span class="grocery">🥛</span><span class="grocery">🥖</span></div><div class="kitchen-table"><div class="tabletop"></div><i class="leg left"></i><i class="leg right"></i><div class="table-items" id="tableItems"></div></div>';
   $("#fridge").onclick=openInventory;renderTableItems();
  }else if(r==="bedroom"){
-  d.innerHTML='<div class="garland" id="garland" aria-label="Гирлянда"><i class="wire"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i></div><div style="position:absolute;left:5%;bottom:0;width:44%;height:22%;background:#4d477d;border-radius:12px 12px 0 0;box-shadow:inset 0 8px #a7a0d5"></div>';
+  d.innerHTML='<div class="window-frame" id="bedWindow" style="left:12%;top:13%;width:36%;height:27%"><div class="curtain-toggle"><i class="curtain"></i><i class="curtain right"></i></div></div><div class="garland" id="garland" aria-label="Гирлянда"><i class="wire"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i></div><div style="position:absolute;left:5%;bottom:0;width:44%;height:22%;background:#4d477d;border-radius:12px 12px 0 0;box-shadow:inset 0 8px #a7a0d5"></div>';
   $("#garland").onclick=()=>{
    const g=$("#garland");
    g.classList.toggle("off");
@@ -188,7 +189,7 @@ function renderDecor(r){
   };
   $("#bedWindow").onclick=()=>$("#bedWindow").classList.toggle("closed");
  }else{
-  d.innerHTML='<div style="position:absolute;left:8%;bottom:0;width:65%;height:18%;background:#b5e9f7;border-radius:14px 14px 0 0"></div><div class="scene-object soap-object" id="soap" aria-label="Перетащить мыло"></div><button id="laundry" class="laundry-hit" aria-label="Порыться в корзине белья"></button>';
+  d.innerHTML='<div class="window-frame" id="bathWindow" style="left:12%;top:12%;width:36%;height:28%"><div class="curtain-toggle"><i class="curtain"></i><i class="curtain right"></i></div></div><div style="position:absolute;left:8%;bottom:0;width:65%;height:18%;background:#b5e9f7;border-radius:14px 14px 0 0"></div><div class="scene-object soap-object" id="soap" aria-label="Перетащить мыло"></div><button id="laundry" class="laundry-hit" aria-label="Порыться в корзине белья"></button>';
   $("#bathWindow").onclick=()=>$("#bathWindow").classList.toggle("closed");setupSoap();
  }
 }
@@ -207,7 +208,7 @@ function sleep(){if(S.energy>90)return say("Я не хочу спать, я бо
 function wake(){S.sleeping=false;say("Доброе утро!");face();renderActions();save()}
 function lullaby(){say("Ля-ля-ля…");S.mood=clamp(S.mood+2);done();setTimeout(()=>{if(S.energy<=90)sleep()},1200)}
 let touchStart=null,touchMoved=false;
-function crackScreen(){const stage=$("#stage");stage.classList.add("cracked","shaking");setTimeout(()=>stage.classList.remove("shaking"),600);say(pick(["ЭЙ! Экран треснул?! Пожалуйста, хватит тыкать меня!","Хватит бить экран! Я злюсь!","Прекрати, пожалуйста! Я же тут!"]));face("angry");$("#char").classList.add("jump");setTimeout(()=>$("#char").classList.remove("jump"),500);setTimeout(()=>{if(!S.sleeping)face()},1800)}
+let crackTimer;function crackScreen(){const stage=$("#stage");stage.classList.add("cracked","shaking");clearTimeout(crackTimer);crackTimer=setTimeout(()=>stage.classList.remove("cracked"),12000);setTimeout(()=>stage.classList.remove("shaking"),600);say(pick(["ЭЙ! Экран треснул?! Пожалуйста, хватит тыкать меня!","Хватит бить экран! Я злюсь!","Прекрати, пожалуйста! Я же тут!"]));face("angry");$("#char").classList.add("jump");setTimeout(()=>$("#char").classList.remove("jump"),500);setTimeout(()=>{if(!S.sleeping)face()},1800)}
 function setupTouchGestures(){const el=$("#char");el.addEventListener("pointerdown",e=>{touchStart={x:e.clientX,y:e.clientY};touchMoved=false;try{el.setPointerCapture(e.pointerId)}catch{}},{passive:true});el.addEventListener("pointermove",e=>{if(!touchStart)return;const dx=e.clientX-touchStart.x,dy=e.clientY-touchStart.y;if(Math.abs(dx)+Math.abs(dy)>12)touchMoved=true;if(touchMoved&&Math.abs(dy)>Math.abs(dx)*1.2)el.classList.add("washing")},{passive:true});el.addEventListener("pointerup",e=>{if(!touchStart)return;const dx=e.clientX-touchStart.x,dy=e.clientY-touchStart.y;el.classList.remove("washing");if(touchMoved&&Math.abs(dy)>Math.abs(dx)*1.2&&dy>12){S.mood=clamp(S.mood+3);say(pick(["Мр-р… приятно.","Ха, щекотно!","Вот так лучше…"]));gainXP(1);face("happy")}else if(touchMoved&&Math.abs(dx)>Math.abs(dy)*1.2){S.mood=clamp(S.mood+5);say(pick(["Обнимашки!","Ох, крепко-крепко!","Иди сюда!"]));gainXP(2);face("happy")}else{S.tapCount++;S.mood=clamp(S.mood-2);if(S.tapCount>=5&&S.tapCount%3===0)crackScreen();else{say(pick(["Ай! Не тыкай так!","Эй, я не кнопка!","Ну чего ты меня тыкаешь?!"]));face("angry")}save();stats()}touchStart=null;setTimeout(()=>{if(!S.sleeping)face()},1500)},{passive:true});el.addEventListener("pointercancel",()=>{touchStart=null;el.classList.remove("washing")},{passive:true})}
 function setupLaundry(){const b=$("#laundry");if(!b)return;b.onclick=()=>{const item=pick(["носок","трусы","ещё один носок","пару носков"]);say(pick(["ОПА. Это точно не моё…","Ты сейчас достала это из корзины?!","Я ничего не видел. Вообще ничего.","Фу-у… стирка сама себя не сделает!"])+ " Там "+item+".");S.mood=clamp(S.mood+(Math.random()<.5?-2:2));save();stats()}}
 $("#char").onclick=null;setupTouchGestures();
@@ -240,3 +241,26 @@ $("#nameOk").onclick=()=>{S.name=$("#nameInp").value.trim().slice(0,16)||"Кай
 function tick(){let now=Date.now(),h=Math.min(12,(now-(S.last||now))/3600000);S.food=clamp(S.food-8*h);S.clean=clamp(S.clean-3*h);S.mood=clamp(S.mood-5*h);S.energy=clamp(S.energy+(S.sleeping?100:-4)*h);if(S.sleeping&&S.energy>=100)S.sleeping=false;S.last=now;stats();face();renderActions();save()}
 (function init(){const today=new Date().toDateString();if(S.savedDay!==today){if(S.savedDay)S.days=(S.days||1)+1;S.savedDay=today;save()}setRoom(ROOMS[S.room]?S.room:"living");setupLaundry();updateLevel();if(!S.name)$("#namer").classList.add("open");else $("#nameBtn").textContent=S.name;face();stats();setInterval(()=>{let now=Date.now(),h=(now-(S.last||now))/3600000;if(h>0){S.food=clamp(S.food-8*h);S.clean=clamp(S.clean-3*h);S.mood=clamp(S.mood-5*h);S.energy=clamp(S.energy+(S.sleeping?100:-4)*h);if(S.sleeping&&S.energy>=100)S.sleeping=false;S.last=now;stats();face();save()}},60000)})();
 </script></body></html>
+<style>
+/* Readable mobile layout and reliable room controls */
+#nameRow{justify-content:flex-start!important;gap:8px;min-width:0}
+#nameBtn{flex:0 0 auto;padding:3px 0;text-align:left}
+#roomTitle{flex:1;min-width:0;text-align:left!important;margin:0!important;opacity:1;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#levelInfo{flex:0 0 auto;margin-left:auto;text-align:left!important}
+#terminal{left:8px;right:auto;width:min(190px,48vw);max-width:190px;text-align:left}
+#terminalHead,#terminalLines,.term-line{text-align:left}
+#terminalHead{font-size:9px;letter-spacing:.04em}
+#terminalLines{max-height:48px;line-height:1.35}
+#stats .stat{gap:4px}
+#stats .statLabel{display:block;width:100%;font-size:10px;line-height:1.1;text-align:center;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#stats .statIcon{flex:0 0 auto}
+#nav{position:relative;z-index:11;isolation:isolate;gap:4px;padding-left:5px;padding-right:5px}
+#nav button{position:relative;z-index:1;min-width:0;min-height:48px;touch-action:manipulation;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+#nav button .room-dot{display:grid;place-items:center;width:27px;height:27px;border-radius:50%;border:1px solid #ffffff55;background:#ffffff18;font-size:17px;line-height:1}
+#nav button small{font-size:10px;line-height:1.1;white-space:nowrap}
+#nav button.on .room-dot{background:#ffffff2b;border-color:#fff}
+#stage.cracked:before{animation:crackFade 12s ease-out forwards}
+@keyframes crackFade{0%{opacity:1}75%{opacity:.9}100%{opacity:0}}
+.window-frame{cursor:pointer}
+@media(max-width:380px){#top{padding-left:8px;padding-right:8px}#nameBtn{font-size:17px}#roomTitle{font-size:12px}#levelInfo{font-size:9px}#stats{left:6px;right:6px;padding:7px 5px;gap:5px}#stats .statIcon{width:32px;height:32px;font-size:15px}#stats .statLabel{font-size:9px}#nav{gap:1px}#nav button{padding-left:1px;padding-right:1px}#nav button small{font-size:9px}}
+</style>
