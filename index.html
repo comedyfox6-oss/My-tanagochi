@@ -235,7 +235,7 @@ html, body {
 #miniGames.open{display:flex}
 .mg-panel{width:min(100%,520px);height:min(94dvh,820px);display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid #ffffff22;border-radius:22px;background:#151723;color:#effff8;box-shadow:0 0 30px #00d68f18;font-family:ui-monospace,monospace}
 .mg-panel header{display:flex;justify-content:space-between;align-items:center;color:#55ffc0;letter-spacing:.06em}
-#mgMenu{display:flex;flex-direction:column;gap:10px;flex:1;justify-content:center}
+#mgMenu{display:flex;flex-direction:column;gap:10px;flex:1;justify-content:center}#mgMenu[hidden]{display:none!important}
 #mgMenu p{color:#9babb1;text-align:center}
 #mgMenu button,#mgClose,#mgControls button,#mgEnd button{border:1px solid #38d99a66;border-radius:12px;padding:14px;background:#122a25;color:#baffdf;font:inherit;font-weight:700}
 #mgPlay{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}#mgPlay[hidden]{display:none}
@@ -370,10 +370,10 @@ const mg=$("#miniGames"), canvas=$("#mgCanvas"), ctx=canvas.getContext("2d");
 let mgMode="",mgRAF=0,mgLast=0,mgState=null,mgHeld={left:false,right:false},mgRunning=false,mgGlitchAt=0;
 function mgWallet(){ $("#mgWallet").textContent="🪙 "+S.coins+" ₽"; }
 function mgOpen(){mg.classList.add("open");$("#mgMenu").hidden=false;$("#mgPlay").hidden=true;mgWallet();}
-function mgExit(){mgRunning=false;cancelAnimationFrame(mgRAF);mg.classList.remove("open");mgHeld={left:false,right:false};}
+function mgExit(){if(mgRunning&&mgState&&mgState.coins){S.coins=(S.coins||0)+mgState.coins;mgState.coins=0;save();mgWallet()}mgRunning=false;cancelAnimationFrame(mgRAF);mg.classList.remove("open");mgHeld={left:false,right:false};}
 function mgSize(){const r=canvas.getBoundingClientRect();const d=Math.min(devicePixelRatio||1,2);const cw=Math.max(1,Math.floor(r.width*d)),ch=Math.max(1,Math.floor(r.height*d));if(canvas.width!==cw||canvas.height!==ch){canvas.width=cw;canvas.height=ch}ctx.setTransform(d,0,0,d,0,0);return {w:r.width,h:r.height};}
 function mgStart(mode){cancelAnimationFrame(mgRAF);mgMode=mode;mgHeld={left:false,right:false};$("#mgMenu").hidden=true;$("#mgPlay").hidden=false;$("#mgEnd").hidden=true;$("#mgAction").textContent=mode==="topdown"?"РЫВОК":"ПРЫЖОК";mgState={t:0,score:0,coins:0,ended:false,won:false,player:{x:.5,y:.78,vy:0,lane:0},items:[],spawn:0,world:0,platform:0};mgGlitchAt=Math.random()<.025?2:Math.floor(40+Math.random()*90);mgRunning=true;mgLast=0;mgWallet();mgRAF=requestAnimationFrame(mgFrame);}
-function mgFinish(win){if(!mgRunning)return;mgRunning=false;mgState.ended=true;mgState.won=win;cancelAnimationFrame(mgRAF);if(win){S.mood=clamp(S.mood+8);face("happy");$("#mgEndTitle").textContent="ПОБЕДА ✦";}else{S.mood=clamp(S.mood-5);face("sad");$("#mgEndTitle").textContent="ОЙ. ПРОИГРАЛИ";}S.coins=(S.coins||0)+mgState.coins;S.energy=clamp(S.energy-3);save();stats();mgWallet();$("#mgEndText").textContent=(win?"Кай справился! ":"Кай немного расстроился. ")+ "Собрано: "+mgState.coins+" ₽ · Счёт: "+mgState.score;$("#mgEnd").hidden=false;$("#mgMessage").textContent=win?"GG!":"404: попытка не удалась";}
+function mgFinish(win){if(!mgRunning)return;mgRunning=false;mgState.ended=true;mgState.won=win;cancelAnimationFrame(mgRAF);if(win){S.mood=clamp(S.mood+8);face("happy");$("#mgEndTitle").textContent="ПОБЕДА ✦";}else{S.mood=clamp(S.mood-5);face(Math.random()<.5?"angry":"sad");$("#mgEndTitle").textContent="ОЙ. ПРОИГРАЛИ";}S.coins=(S.coins||0)+mgState.coins;S.energy=clamp(S.energy-3);save();stats();mgWallet();$("#mgEndText").textContent=(win?"Кай справился! ":"Кай немного расстроился. ")+ "Собрано: "+mgState.coins+" ₽ · Счёт: "+mgState.score;$("#mgEnd").hidden=false;$("#mgMessage").textContent=win?"GG!":"404: попытка не удалась";}
 function mgCoin(x,y){const n=1+Math.floor(Math.random()*5);mgState.items.push({x,y,kind:"coin",value:n});}
 function mgFrame(ts){if(!mgRunning)return;const dt=Math.min(.035,(ts-(mgLast||ts))/1000);mgLast=ts;const {w,h}=mgSize(),s=mgState;s.t+=dt;s.world+=dt*(mgMode==="runner"?190:mgMode==="topdown"?155:95);s.spawn+=dt;
 ctx.clearRect(0,0,w,h);
@@ -401,7 +401,7 @@ for(const o of s.items){o.y+=180*dt;const ox=w*(.5+o.lane*.22);if(o.kind==="coin
 ctx.fillStyle="#8e59c7";ctx.fillRect(px-17,py-23,34,38);mgDrawBoy(px,py-27,23,true);
 }
 s.items=s.items.filter(o=>o.x>-60&&o.y<h+60&&o.kind!=="gone");
-if(s.t>mgGlitchAt&&s.t<mgGlitchAt+.12){ctx.fillStyle="#d9ffec";ctx.fillRect(w*.73,h*.18,3,3);ctx.fillRect(w*.75,h*.2,2,2);ctx.fillStyle="#ff72cf";ctx.fillRect(w*.74,h*.18,2,2)}
+if(s.t>mgGlitchAt&&s.t<mgGlitchAt+.12){ctx.fillStyle="#d9ffec";ctx.fillRect(w*.73,h*.18,3,3);ctx.fillRect(w*.76,h*.18,3,3);ctx.fillStyle="#ff72cf";ctx.fillRect(w*.735,h*.185,1,2);ctx.fillRect(w*.765,h*.185,1,2)}
 $("#mgScore").textContent="Счёт: "+s.score+" · 🪙 "+s.coins+" ₽";if(s.t>55&&mgRunning)mgFinish(true);if(mgRunning)mgRAF=requestAnimationFrame(mgFrame);}
 function mgDrawBoy(x,y,size,topdown=false){ctx.save();ctx.translate(x,y);if(topdown){ctx.fillStyle="#e95aa8";ctx.fillRect(-size*.28,-size*.95,size*.56,size*.46);ctx.fillStyle="#282235";ctx.fillRect(-size*.2,-size*.84,3,3);ctx.fillRect(size*.08,-size*.84,3,3)}else{ctx.fillStyle="#9b8cff";ctx.fillRect(-size*.3,-size*.65,size*.6,size*.62);ctx.fillStyle="#e95aa8";ctx.fillRect(-size*.34,-size*.95,size*.68,size*.38);ctx.fillStyle="#f6f0ff";ctx.fillRect(-size*.18,-size*.82,4,4);ctx.fillRect(size*.08,-size*.82,4,4);ctx.fillStyle="#9b8cff";ctx.fillRect(-size*.42,-size*.5,size*.12,size*.35);ctx.fillRect(size*.3,-size*.5,size*.12,size*.35);ctx.fillStyle="#c7baff";ctx.fillRect(-size*.23,-size*.04,size*.18,size*.25);ctx.fillRect(size*.06,-size*.04,size*.18,size*.25)}ctx.restore()}
 function mgDrawCoin(x,y,n){ctx.fillStyle="#f6c84c";ctx.beginPath();ctx.arc(x,y,9,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#fff0a0";ctx.lineWidth=2;ctx.stroke();ctx.fillStyle="#5d4210";ctx.font="bold 9px monospace";ctx.textAlign="center";ctx.fillText(n,x,y+3)}
