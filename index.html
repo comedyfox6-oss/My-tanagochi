@@ -295,7 +295,7 @@ html, body {
 </style>
 <style id="kai-touch-hotfix">
 /* Coordinate-based document listeners handle taps even through transparent overlays. */
-#char{pointer-events:auto!important;touch-action:none!important;z-index:300!important}
+#char{pointer-events:auto!important;touch-action:none!important}
 #char img,#char svg{pointer-events:none!important;-webkit-user-drag:none}
 </style>
 </head>
@@ -406,6 +406,12 @@ function setupTouchGestures(){
  document.addEventListener("pointermove",move,{capture:true,passive:true});
  document.addEventListener("pointerup",end,{capture:true,passive:true});
  document.addEventListener("pointercancel",cancel,{capture:true,passive:true});
+ // Native Touch Events fallback for iOS WebKit and older standalone Home Screen apps.
+ const touchPoint=e=>{const t=e.changedTouches&&e.changedTouches[0];return t?{pointerId:"native-touch",clientX:t.clientX,clientY:t.clientY}:null};
+ document.addEventListener("touchstart",e=>{const p=touchPoint(e);if(p)start(p)},{capture:true,passive:true});
+ document.addEventListener("touchmove",e=>{const p=touchPoint(e);if(p)move(p)},{capture:true,passive:true});
+ document.addEventListener("touchend",e=>{const p=touchPoint(e);if(p)end(p)},{capture:true,passive:true});
+ document.addEventListener("touchcancel",cancel,{capture:true,passive:true});
 }function setupLaundry(){const b=$("#laundry");if(!b)return;b.onclick=()=>{const item=pick(["носок","трусы","ещё один носок","пару носков"]);say(pick(["ОПА. Это точно не моё…","Ты сейчас достала это из корзины?!","Я ничего не видел. Вообще ничего.","Фу-у… стирка сама себя не сделает!"])+ " Там "+item+".");S.mood=clamp(S.mood+(Math.random()<.5?-2:2));save();stats()}}
 $("#char").onclick=null;setupTouchGestures();
 $("#dayNight").onclick=()=>{S.timeMode=S.timeMode==="night"?"day":"night";$("#stage").classList.toggle("night",S.timeMode==="night");$("#dayNight").textContent=S.timeMode==="night"?"День":"Ночь";save()};
