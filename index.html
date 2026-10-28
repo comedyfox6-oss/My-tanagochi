@@ -54,6 +54,40 @@ html,body{margin:0;height:100%;background:var(--bg);color:white;font-family:-app
 #char{top:22%;bottom:3%;width:min(64%,300px)}
 #bubble{display:none!important}
 @media(min-width:700px){#char{width:min(42%,360px)}#terminal{height:100px;flex-basis:100px}}
+
+/* Tamagotchi-style status HUD: anchored at the bottom of the play area */
+#stage{position:relative}
+#stats{
+  position:absolute;z-index:7;top:auto;bottom:9px;left:10px;right:10px;
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;
+  padding:9px 10px 8px;
+  background:rgba(24,20,48,.68);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.22);border-radius:22px;
+  box-shadow:0 4px 18px rgba(20,12,45,.18);
+}
+#stats .stat{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+#stats .statIcon{
+  width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
+  font-size:17px;font-weight:700;color:#fff;
+  background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.58);
+  box-shadow:inset 0 0 0 3px rgba(255,255,255,.045),0 2px 8px rgba(0,0,0,.12);
+}
+#stats .stat:nth-child(odd) .statIcon{background:rgba(255,143,194,.24);border-color:rgba(255,184,218,.9);color:#ffe2f0}
+#stats .stat:nth-child(even) .statIcon{background:rgba(112,218,255,.20);border-color:rgba(151,231,255,.9);color:#d9f7ff}
+#stats .bar{width:100%;height:6px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.12);border-radius:99px;overflow:hidden}
+#stats .bar i{display:block;height:100%;width:0;border-radius:99px;transition:width .7s cubic-bezier(.22,.8,.25,1),background-color .45s ease;box-shadow:0 0 7px currentColor}
+#char{bottom:17%;top:22%}
+@media(min-width:700px){
+  #stats{left:50%;right:auto;transform:translateX(-50%);width:min(420px,calc(100% - 32px));bottom:12px}
+  #char{bottom:18%;width:min(42%,360px)}
+}
+@media(max-height:560px){
+  #stats{padding:5px 8px;gap:7px;bottom:5px}
+  #stats .statIcon{width:30px;height:30px;font-size:14px}
+  #stats .bar{height:5px}
+  #char{bottom:18%;top:18%}
+}
+
 </style>
 </head>
 <body><div id="app">
@@ -73,7 +107,7 @@ let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch{};S=S||{name:null,food:8
 function save(){S.last=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch{}}
 const STATS=[["food","●"],["mood","♥"],["energy","ϟ"],["clean","○"]];
 $("#stats").innerHTML=STATS.map(([k,e])=>'<div class="stat"><div class="statIcon" aria-label="'+k+'">'+e+'</div><div class="bar"><i id="b_'+k+'"></i></div></div>').join("");
-function stats(){STATS.forEach(([k])=>{$("#b_"+k).style.width=S[k]+"%";$("#b_"+k).style.background="hsl("+Math.round(S[k]*1.2)+",80%,60%)"})}
+function stats(){const colors={food:"#ff8fc2",mood:"#8edfff",energy:"#ffadd5",clean:"#83e5f3"};STATS.forEach(([k])=>{const bar=$("#b_"+k);bar.style.width=clamp(S[k])+"%";bar.style.background=colors[k];bar.style.color=colors[k]})}
 function logLine(t,kind="bot"){const box=$("#terminalLines");if(!box)return;const d=document.createElement("div");d.className="term-line "+(kind==="system"?"system":"");const now=new Date();const stamp=now.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});d.innerHTML='<span class="stamp">['+stamp+']</span>';d.append(document.createTextNode((kind==="system"?"SYS: ":"")+t));box.append(d);while(box.children.length>5)box.firstElementChild.remove();box.scrollTop=box.scrollHeight}
 function say(t){logLine(t);}
 function fx(e,n=1){for(let i=0;i<n;i++){let s=document.createElement("span");s.className="fx";s.textContent=e;s.style.left=(30+Math.random()*40)+"%";s.style.top="45%";$("#stage").append(s);setTimeout(()=>s.remove(),1700)}}
