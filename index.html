@@ -146,6 +146,20 @@ html,body{margin:0;height:100%;background:var(--bg);color:white;font-family:-app
 @media(max-width:380px){#top{padding-left:8px;padding-right:8px}#nameBtn{font-size:17px}#roomTitle{font-size:12px}#levelInfo{font-size:9px}#stats{left:6px;right:6px;padding:7px 5px;gap:5px}#stats .statIcon{width:32px;height:32px;font-size:15px}#stats .statLabel{font-size:9px}#nav{gap:1px}#nav button{padding-left:1px;padding-right:1px}#nav button small{font-size:9px}}
 </style>
 
+<style>
+
+/* Bigger Tom-style character and terminal-to-chat shortcut */
+#terminal{cursor:pointer;pointer-events:auto;touch-action:manipulation;z-index:15;top:44px;left:8px;width:min(205px,55vw);max-width:205px;min-height:74px;box-shadow:0 5px 18px #0004}
+#terminal:active{transform:scale(.99)}
+#terminalHead{cursor:pointer}
+#terminalHead:after{content:" · НАЖМИ ДЛЯ ЧАТА";font-size:8px;letter-spacing:0;color:#ffb9df}
+#terminalLines{cursor:pointer;max-height:52px}
+#char{width:min(94%,500px)!important;top:12%!important;bottom:5%!important}
+#char img,#char svg{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
+@media(min-width:700px){#char{width:min(70%,560px)!important;top:10%!important;bottom:5%!important}}
+@media(max-height:600px){#char{width:min(78%,400px)!important;top:14%!important;bottom:4%!important}}
+#chat{z-index:30}
+</style>
 </head>
 <body><div id="app">
 <header id="top"><div id="nameRow"><button id="nameBtn">…</button><span id="roomTitle"></span><span id="levelInfo">Ур. 0 · День 1</span></div><button id="dayNight" type="button">Ночь</button></header>
@@ -242,6 +256,7 @@ const OFFLINE=["Я тебя слушаю.","Расскажи ещё!","Мне н
 function addMsg(r,t){S.chat.push({r,t});if(S.chat.length>80)S.chat.shift();let d=document.createElement("div");d.className="m "+r;d.textContent=t;$("#msgs").append(d);$("#msgs").scrollTop=$("#msgs").scrollHeight;logLine((r==="me"?"Ты: ":(S.name||"Бойчик")+": ")+t);save()}
 function openChat(){$("#chat").classList.add("open");$("#chatName").textContent=S.name||"Кай";$("#msgs").innerHTML="";S.chat.forEach(m=>{let d=document.createElement("div");d.className="m "+m.r;d.textContent=m.t;$("#msgs").append(d)});$("#msgs").scrollTop=$("#msgs").scrollHeight;$("#inp").focus()}
 $("#back").onclick=()=>$("#chat").classList.remove("open");
+$("#terminal").addEventListener("click",openChat);
 function systemPrompt(){return "Ты — "+S.name+", милый ИИ-бойчик и виртуальный питомец-компаньон. Говори по-русски, естественно, тепло, живо и немного смешно, обычно 1–3 коротких предложения. Не дави на хозяйку и не вини её за отсутствие. Твои игровые показатели сейчас: сытость "+Math.round(S.food)+"/100, настроение "+Math.round(S.mood)+"/100, энергия "+Math.round(S.energy)+"/100, чистота "+Math.round(S.clean)+"/100. Комната: "+ROOMS[S.room]?.name+". Сон: "+(S.sleeping?"спишь":"не спишь")+". Уровень: "+S.level+". Доверие хозяйке: "+Math.min(100,Math.floor(S.trust/2))+"%. Чем выше уровень и доверие, тем теплее и охотнее ты проявляешь заботу и отвечаешь на ласковые жесты. Учитывай показатели и мягко реагируй на изменения самочувствия, но не повторяй одно и то же. "+(CONFIG.USER_NOTES||"")}
 async function askAI(text,proactive=false){try{let messages=[{role:"system",content:systemPrompt()},...(proactive?[]:S.chat.slice(-16).map(m=>({role:m.r==="me"?"user":"assistant",content:m.t}))),{role:"user",content:text}];let res=await fetch(CONFIG.API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:CONFIG.MODEL,messages,temperature:.9,max_tokens:200})});if(!res.ok)return null;let j=await res.json();return j.choices?.[0]?.message?.content?.trim()||null}catch{return null}}
 let pending=false;
