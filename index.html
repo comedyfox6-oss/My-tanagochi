@@ -125,6 +125,24 @@ html,body{margin:0;height:100%;background:var(--bg);color:white;font-family:-app
 </style>
 
 <style>
+/* Final room-circle controls: clickable rooms + progress ring inside each neon circle */
+#stats{display:flex!important;align-items:flex-start!important;justify-content:space-between!important;gap:clamp(3px,1vw,8px)!important;overflow:visible!important}
+#stats button.roomStat{appearance:none;-webkit-appearance:none;position:relative;z-index:2;cursor:pointer;pointer-events:auto;flex:1 1 0!important;min-width:0;max-width:72px;padding:0!important;margin:0;border:0!important;background:transparent!important;color:#fff!important;display:flex!important;flex-direction:column!important;align-items:center!important;gap:3px!important}
+#stats button.roomStat .statIcon{--ring-color:#ff8fc2;position:relative;isolation:isolate;flex:0 0 auto;width:clamp(36px,9vw,46px)!important;height:clamp(36px,9vw,46px)!important;border:0!important;border-radius:50%!important;padding:3px!important;display:grid!important;place-items:center!important;background:conic-gradient(var(--ring-color) var(--pct,0%),rgba(255,255,255,.2) 0)!important;box-shadow:0 0 10px color-mix(in srgb,var(--ring-color) 35%,transparent)!important;transition:filter .2s,transform .2s}
+#stats button.roomStat .statIcon:before{content:"";position:absolute;z-index:0;inset:4px;border-radius:50%;background:#282044!important;border:1px solid #ffffff35!important}
+#stats button.roomStat .statIcon span{position:relative;z-index:1;font-size:17px!important;line-height:1}
+#stats button.roomStat #ring_food{--ring-color:#ff8fc2}
+#stats button.roomStat #ring_mood{--ring-color:#8edfff}
+#stats button.roomStat #ring_energy{--ring-color:#ffadd5}
+#stats button.roomStat #ring_clean{--ring-color:#83e5f3}
+#stats button.roomStat .statLabel{display:block!important;width:100%;font-size:9px!important;line-height:1.1!important;white-space:nowrap;text-align:center;color:#fff!important}
+#stats button.roomStat .meterLabel{display:block!important;font-size:8px!important;line-height:1!important;white-space:nowrap;opacity:.72}
+#stats button.roomStat.on .statIcon{filter:brightness(1.15);transform:scale(1.04)}
+#stats button.roomStat:active .statIcon{transform:scale(.94)}
+#stats #miniGamesQuick{pointer-events:auto;position:relative;z-index:2}
+#stats #coinCounter{pointer-events:none}
+#nav button[data-r]{display:none!important}
+
 /* Readable mobile layout and reliable room controls */
 #nameRow{justify-content:flex-start!important;gap:8px;min-width:0}
 #nameBtn{flex:0 0 auto;padding:3px 0;text-align:left}
@@ -265,7 +283,7 @@ const STATS=[["food","●"],["mood","♥"],["energy","ϟ"],["clean","○"]];
 const STAT_NAMES={food:"Еда",mood:"Настроение",energy:"Энергия",clean:"Чистота"};
 const ROOM_METERS=[["kitchen","food","🍽️"],["living","mood","🛋️"],["bedroom","energy","🛏️"],["bathroom","clean","🛁"]];
 $("#stats").innerHTML=ROOM_METERS.map(([room,k,e])=>'<button type="button" class="stat roomStat '+(S.room===room?"on":"")+'" data-r="'+room+'" title="'+ROOMS[room].name+'"><span class="statIcon" id="ring_'+k+'" aria-label="'+STAT_NAMES[k]+'"><span>'+e+'</span></span><small class="statLabel">'+ROOMS[room].name+'</small><small class="meterLabel">'+STAT_NAMES[k]+'</small></button>').join("")+'<button type="button" id="miniGamesQuick" aria-label="Мини-игры"><span>🎮</span><small>Игры</small></button><div id="coinCounter" aria-label="Монеты"><span>🪙</span><b id="coinCount">0 ₽</b></div>';
-function stats(){const colors={food:"#ff8fc2",mood:"#8edfff",energy:"#ffadd5",clean:"#83e5f3"};STATS.forEach(([k])=>{const ring=$("#ring_"+k);if(ring)ring.style.setProperty("--pct",clamp(S[k])+"%");});const coin=$("#coinCount");if(coin)coin.textContent=(S.coins||0)+" ₽";const wallet=$("#mgWallet");if(wallet)wallet.textContent="🪙 "+(S.coins||0)+" ₽";}
+function stats(){STATS.forEach(([k])=>{const ring=$("#ring_"+k);if(ring)ring.style.setProperty("--pct",clamp(S[k])+"%");});const coin=$("#coinCount");if(coin)coin.textContent=(S.coins||0)+" ₽";const wallet=$("#mgWallet");if(wallet)wallet.textContent="🪙 "+(S.coins||0)+" ₽";}
 function logLine(t,kind="bot"){const box=$("#terminalLines");if(!box)return;const d=document.createElement("div");d.className="term-line "+(kind==="system"?"system":"");const now=new Date();const stamp=now.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});d.innerHTML='<span class="stamp">['+stamp+']</span>';d.append(document.createTextNode((kind==="system"?"SYS: ":"")+t));box.append(d);while(box.children.length>5)box.firstElementChild.remove();box.scrollTop=box.scrollHeight}
 function say(t){logLine(t);}
 function fx(e,n=1){for(let i=0;i<n;i++){let s=document.createElement("span");s.className="fx";s.textContent=e;s.style.left=(30+Math.random()*40)+"%";s.style.top="45%";$("#stage").append(s);setTimeout(()=>s.remove(),1700)}}
@@ -290,7 +308,7 @@ function face(state){
  img.src="assets/char/"+s+".png";
  clearTimeout(charStateTimer);
  if(state&&state!=="sleep"&&state!=="sad")charStateTimer=setTimeout(()=>face(),1800);
-}function renderNav(){const nav=$("#nav");nav.innerHTML='<button type="button" id="chatBtn"><span class="room-dot">💬</span><small>Чат</small></button>'}
+}function renderNav(){const nav=$("#nav");nav.innerHTML='<button type="button" id="chatBtn"><span class="room-dot">💬</span><small>Чат</small></button>';nav.querySelectorAll("button[data-r]").forEach(b=>b.remove())}
 // Делегирование кликов: навигация работает и после перерисовки кнопок.
 $("#nav").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.r){e.preventDefault();setRoom(b.dataset.r)}else if(b.id==="chatBtn"){e.preventDefault();openChat()}});
 $("#stats").addEventListener("click",e=>{const room=e.target.closest("button[data-r]");if(room){setRoom(room.dataset.r);return}if(e.target.closest("#miniGamesQuick"))mgOpen()});
