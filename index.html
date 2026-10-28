@@ -160,6 +160,20 @@ html,body{margin:0;height:100%;background:var(--bg);color:white;font-family:-app
 @media(max-height:600px){#char{width:min(78%,400px)!important;top:14%!important;bottom:4%!important}}
 #chat{z-index:30}
 </style>
+<style>
+/* Fixes: visible level/day, working room navigation and chat on mobile */
+#nameRow{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:8px!important;min-height:30px}
+#nameBtn{order:1!important;flex:0 0 auto!important}
+#levelInfo{order:2!important;flex:0 0 auto!important;margin:0 4px 0 0!important;text-align:left!important;font-size:11px!important;white-space:nowrap!important;opacity:1!important}
+#roomTitle{order:3!important;flex:1 1 auto!important;text-align:left!important;min-width:0}
+#dayNight{top:4px;right:6px;z-index:60}
+#nav{position:relative!important;z-index:100!important;isolation:isolate;pointer-events:auto!important}
+#nav button{position:relative!important;z-index:101!important;pointer-events:auto!important;touch-action:manipulation!important;cursor:pointer!important}
+#chat{position:fixed!important;inset:0!important;z-index:1000!important;padding-top:max(10px,env(safe-area-inset-top))!important;padding-bottom:max(10px,env(safe-area-inset-bottom))!important}
+#terminal{z-index:80!important;cursor:pointer!important;pointer-events:auto!important}
+#terminalHead,#terminalLines{pointer-events:auto!important}
+@media(max-width:380px){#levelInfo{font-size:10px!important;gap:4px!important}#nameRow{gap:5px!important}}
+</style>
 </head>
 <body><div id="app">
 <header id="top"><div id="nameRow"><button id="nameBtn">…</button><span id="roomTitle"></span><span id="levelInfo">Ур. 0 · День 1</span></div><button id="dayNight" type="button">Ночь</button></header>
@@ -204,7 +218,9 @@ function face(state){
  img.src="assets/char/"+s+".png";
  clearTimeout(charStateTimer);
  if(state&&state!=="sleep"&&state!=="sad")charStateTimer=setTimeout(()=>face(),1800);
-}function renderNav(){let nav=$("#nav");nav.innerHTML=Object.keys(ROOMS).map(r=>'<button data-r="'+r+'" class="'+(S.room===r?"on":"")+'"><span class="room-dot">'+({kitchen:"▦",living:"⌂",bedroom:"☾",bathroom:"≈"}[r])+'</span><small>'+ROOMS[r].name+'</small></button>').join("")+'<button id="chatBtn"><span class="room-dot">…</span><small>Чат</small></button>';nav.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>setRoom(b.dataset.r));$("#chatBtn").onclick=openChat}
+}function renderNav(){const nav=$("#nav");nav.innerHTML=Object.keys(ROOMS).map(r=>'<button type="button" data-r="'+r+'" class="'+(S.room===r?"on":"")+'"><span class="room-dot">'+({kitchen:"▦",living:"⌂",bedroom:"☾",bathroom:"≈"}[r])+'</span><small>'+ROOMS[r].name+'</small></button>').join("")+'<button type="button" id="chatBtn"><span class="room-dot">💬</span><small>Чат</small></button>'}
+// Делегирование кликов: навигация работает и после перерисовки кнопок.
+$("#nav").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.r){e.preventDefault();setRoom(b.dataset.r)}else if(b.id==="chatBtn"){e.preventDefault();openChat()}});
 function renderDecor(r){
  const d=$("#decor");d.innerHTML="";
  if(r==="living"){
